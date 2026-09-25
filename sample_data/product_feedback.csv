@@ -1,0 +1,6 @@
+feedback_id,customer_id,rating,content
+F001,C01,5,The new search is excellent and fast.
+F002,C02,1,The app keeps failing and support is terrible.
+F003,C03,4,Useful results, although the filters are confusing.
+F003,C04,6,I like the features but the response is slow.
+F005,,3,

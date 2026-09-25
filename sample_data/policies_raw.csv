@@ -1,0 +1,3 @@
+policy_id,updated_at,owner_email,policy_text
+P100,2026-08-01,maya@example.com,Staff may carry forward up to 5 leave days.
+P200,2026-08-10,arun@example.com,Travel claims must be submitted within 30 days.
