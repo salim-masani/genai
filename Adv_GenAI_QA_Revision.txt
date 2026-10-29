@@ -1,0 +1,204 @@
+ADVANCED GENERATIVE AI ON AWS - Q&A REVISION
+Repeated scenarios are grouped. Includes corrections to questionable answer choices.
+
+1. PROMPTS AND GOVERNANCE
+- Prompt Management: reusable templates, variables, business-unit variants and versions.
+- Specify summary, risk classification, flagged terms and output format explicitly.
+- Four required inputs means four supplied prompt variables.
+- Test complex documents with representative datasets and measurable criteria.
+- Governance combines prompt versions, IAM, CloudTrail and an external approval/notification workflow.
+- Standardize inputs and evaluate every stage of a prompt chain.
+
+2. GUARDRAILS
+- Investment advice/guaranteed returns: denied topics with definitions and examples.
+- Competitor names: custom word filters on input and output.
+- Hate, insults, violence and sexual content: content filters with tuned strengths.
+- Bullying without blocking: Insults filter with detect-only behavior where supported.
+- PII: block or mask as policy requires. Redact before inference if the model must never receive it.
+- Evaluate outputs too; input-only filtering is insufficient.
+- Grounding checks compare generated answers with supplied references. Higher minimum thresholds are stricter.
+- Prompt attacks require layered controls: filters, validation, authorization and restricted tools.
+- Surgeon/engineer differences: trusted identity, correct policy and underlying data authorization.
+- Cross-account enforcement: centrally governed guardrails plus IAM/organizational restrictions.
+
+3. RAG AND RETRIEVAL
+- Approved documents: Bedrock Knowledge Bases with RAG.
+- Citations: RetrieveAndGenerate; expose source attribution to users.
+- Invented products: retrieve the current catalog and validate against inventory.
+- Exact medical acronyms/legal citations: hybrid semantic plus keyword search.
+- Similar but irrelevant documents: reranking; prefer managed Knowledge Bases configuration when suitable.
+- Excessive content/date range: metadata filters.
+- Recent reports only: publication-date filters plus index synchronization.
+- Multi-hop relationships: Graph RAG and Neptune Analytics.
+- Complex questions: decomposition into focused subqueries.
+- Multilingual search: suitable multilingual embeddings and evaluation in every language.
+- Restaurant-scale search: scalable vector indexes and freshness-aware ingestion.
+
+4. CHUNKING AND VECTOR STORES
+- Semantic chunks preserve arguments, clauses and sections.
+- Hierarchical chunks combine precise child retrieval with parent context.
+- Overlap preserves continuity but increases processing/storage.
+- Changing chunks requires regenerating embeddings and updating indexes.
+- Context overflow: retrieve relevant chunks instead of sending full documents.
+- Truncated outputs: check output-token limits separately.
+- Query/document embeddings must use compatible models and configuration.
+- Generation model may differ from embedding model.
+- Increasing dimensions does not automatically fix retrieval.
+- Small dataset/exact accuracy: Flat search may fit.
+- Large dataset/low latency: approximate search such as HNSW.
+- Existing PostgreSQL: Aurora PostgreSQL with pgvector.
+- Keyword/vector/metadata workloads: OpenSearch Service or Serverless.
+- Required metadata must be filterable.
+
+5. AGENTS, AGENTCORE AND MCP
+- Product documentation plus order APIs: agent + knowledge base + action groups.
+- Multi-turn context needs session IDs and managed state.
+- Agent traces reveal tool calls and execution outcomes.
+- AgentCore components address runtime, memory, identity, gateway and observability.
+- Gateway can expose supported API/Lambda tools; do not assume arbitrary tools work without integration.
+- Supervisor routes clinical, scheduling and insurance questions to specialists.
+- Isolate departmental knowledge and enforce retrieval authorization.
+- Sequential search/recommendation/order: Step Functions tasks with retries/fallbacks.
+- Remote Lambda MCP: Streamable HTTP behind authenticated endpoints.
+- Partner access: OAuth authentication plus server-side authorization.
+- STDIO is local-process transport; API keys are not user authorization.
+
+6. WORKFLOWS AND EVENTS
+- Parallel/Map states run independent report analyses concurrently.
+- Human approval: Standard workflow callback/task token; resume with SendTaskSuccess/Failure.
+- Persist review decisions for audit.
+- Clarification workflows need durable state and appropriate waiting/callback patterns.
+- Over 256 KB: store payloads in S3 and pass references.
+- Use supported Bedrock integration S3 input/output features for large model payloads.
+- Known template parsing: deterministic transformations rather than an agent.
+- MP3 upload: S3 -> EventBridge -> Step Functions -> Transcribe -> completion check -> Bedrock -> JSON.
+- Retraining: S3 event -> EventBridge -> SageMaker Pipeline -> evaluation -> deployment.
+- Large conversation datasets: parallel extraction, PII redaction, embedding and vector writes; respect quotas.
+- Timeouts do not make slow inference run faster.
+
+7. STREAMING AND APIS
+- Progressive output: InvokeModelWithResponseStream or ConverseStream.
+- Bidirectional client updates: API Gateway WebSocket with backend forwarding.
+- Live call suggestions: Transcribe partial results -> streaming inference -> streaming display.
+- Batch transcription is for completed recordings.
+- Python Lambda and JavaScript EKS can use Converse through their SDKs and IAM roles.
+- Converse context requires previous messages in requests; do not assume automatic stored history.
+- Streaming improves first-visible-output time, not necessarily total generation time.
+- API Gateway REST supports response streaming; do not assume interchangeable HTTP API support.
+
+8. ROUTING AND DEPLOYMENT
+- Switch models without code deployment: AWS AppConfig runtime configuration.
+- Customer-tier, cost, Region and transaction rules: trusted request attributes plus custom routing.
+- Validate temperature/token settings with JSON schema or Lambda validators.
+- Feature flags support A/B testing; gradual rollout and alarms support rollback.
+- Simple versus complex requests: intelligent prompt routing where supported model choices fit.
+- Canary releases: gradual traffic, quality/latency/error checks and automatic rollback.
+- Dev/prod: reusable infrastructure code with environment-specific configuration/stages.
+- Standard business-unit deployments: versioned IaC, CI/CD, CloudFormation Guard and/or Service Catalog.
+
+9. CACHING, PERFORMANCE AND TOKENS
+- Repeated long prefix: prompt caching reuses prefix computation.
+- Rephrased equivalent question: semantic cache reuses a previous response through vector similarity.
+- Exact repeated request: exact-match response cache.
+- Mostly unique queries: caching helps less; improve retrieval/inference.
+- Optimized latency applies only to supported models/Regions.
+- Sustained predictable demand: assess provisioned throughput cost/utilization.
+- Variable demand without idle commitment: on-demand and compliant cross-Region inference.
+- Count/estimate input tokens and reserve output space; use supported token-count APIs where available.
+- Maximum output tokens cap generation, not total account/user spending.
+- Attribute actual usage by application/model/business unit; publish metrics and proactive alarms.
+
+10. RETRIES
+- Transient errors/throttles: bounded exponential backoff with jitter.
+- Appropriate connection/read timeouts, circuit breakers and load shedding.
+- Adaptive retries where appropriate; do not retry invalid/unauthorized requests repeatedly.
+- Keep received chunks, but do not assume arbitrary-chunk stream resumption.
+- Fallback models must satisfy quality, permissions and residency requirements.
+
+11. EVALUATION
+- Compare prompts with identical representative inputs and criteria.
+- Chunking: retrieval relevance/coverage; generation: correctness/completeness/groundedness.
+- Automated screening plus targeted expert review reduces human cost.
+- Financial compliance needs policy checks and expert oversight.
+- Multilingual regression: equivalent conversations across all languages.
+- CI/CD quality thresholds block poor releases.
+- BERTScore indicates similarity, not guaranteed factual correctness.
+- Fairness requires demographic outcome metrics and explicit disparity calculations.
+- Alert on the defined 15% threshold; schedule weekly prompt comparison reports.
+- Guardrail intervention counts are not fairness measurements.
+- Offline evaluation does not block individual production hallucinations.
+
+12. SECURITY AND RESIDENCY
+- Private Bedrock connectivity: interface VPC endpoints/PrivateLink.
+- Enforce IAM, endpoint policies and applicable condition keys.
+- Cross-account column access: Lake Formation grants and LF-tags.
+- Exclude/redact sensitive columns before inference.
+- Approved models: IAM and organizational restrictions; SCP explicit deny overrides IAM allow.
+- Strict single-Region processing excludes profiles that route elsewhere.
+- Geography residency: inspect all inference-profile destination Regions.
+- CRI permission errors: check profile and every potential destination resource.
+- PrivateLink does not pin cross-Region processing to the source Region.
+- Identity claims, not prompt text, determine authorization.
+- Hotel isolation: separate accounts/knowledge bases or equivalent tenant enforcement.
+- Live availability should use authoritative operational APIs.
+
+13. PREPARATION AND PROVENANCE
+- Glue Data Catalog registers sources/schemas; Glue ETL transforms; Glue Data Quality validates.
+- Metadata: publication date, author, domain, source ID and access classification.
+- Distinguish S3 system metadata, user metadata and tags; ingest retrieval metadata explicitly.
+- Preserve source IDs through ingestion, retrieval and citations.
+- CloudTrail records access with required event categories enabled.
+- Retention/Object Lock can protect audit records.
+- Macie discovers sensitive S3 data; it is not inline redaction.
+- Expiry: retention + knowledge-base synchronization + query-time publication-date filters.
+- Object creation age is not publication age.
+
+14. MULTIMODAL PROCESSING
+- Scanned forms: Textract. Low confidence: human review/A2I integration.
+- Audio: Transcribe. Images: Rekognition moderation.
+- Text: toxicity detection and PII detection with actual redaction.
+- Wildlife multimodal research: preprocess modalities, preserve timestamps/sources and avoid speculative interpretation.
+- Independent filters can run in parallel, but all required checks finish before inference.
+- Specify structured output schemas and validate results.
+
+15. OBSERVABILITY
+- CloudWatch: latency, invocation, token, throttle and error metrics.
+- Invocation logs/Logs Insights: usage patterns and application attribution.
+- X-Ray or equivalent tracing: latency across service boundaries.
+- Record tool identifiers to correlate abnormal token usage with integrations.
+- Anomaly detection adapts baselines; composite alarms combine underlying alarm states.
+- SNS notifies stakeholders; dashboards correlate imported business and technical metrics.
+- CloudTrail records API activity, not complete conversations or distributed traces.
+- Explicit invocation/application logging records prompts, responses and attachments.
+- Agent traces plus application logs support execution audits.
+
+16. AMAZON Q
+- Q Business: source ACLs mapped to verified IAM Identity Center groups.
+- Prefix names alone do not enforce indexed assistant access.
+- Customer-controlled knowledge: assess Q Business data-accessor integration and delegated permissions.
+- Q Developer organization customization differs from project rules/workspace context.
+- No project modifications suggests centrally managed capabilities; verify feature availability.
+
+CORRECTIONS TO REMEMBER
+- EU-only and single-Region-only differ.
+- Prompt Management/IAM alone does not create approval notifications.
+- RAG/citations/guardrails do not guarantee zero hallucinations.
+- Provisioned throughput alone does not prove autoscaling or latency targets.
+- CloudFront does not remove uncached personalized generation time.
+- Semantic similarity does not prove truth.
+- The Lake Formation question around page 64 has a malformed/missing option.
+- Aggressive latency and concurrency targets require benchmarking, not assumptions.
+
+FAST RECALL
+Templates=Prompt Management; Safety=Guardrails; Grounding=RAG;
+Exact terms=Hybrid search; Relevance=Reranking; Relationships=Graph RAG;
+Runtime switching=AppConfig; Human approval=Step Functions callback;
+Private connectivity=PrivateLink; Column access=Lake Formation;
+API audit=CloudTrail; Performance=CloudWatch.
+
+REFERENCES
+https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html
+https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html
+https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
+https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html
+https://aws.amazon.com/blogs/compute/building-responsive-apis-with-amazon-api-gateway-response-streaming/
